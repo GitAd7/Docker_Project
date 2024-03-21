@@ -1,24 +1,37 @@
 import pandas as pd
 import numpy as np
-from flask import Flask,request
 import pickle
+import streamlit as stl
+from PIL import Image
 
-app = Flask(__name__)
 pickle_in = open('random_classifier.pkl', 'rb')
 classifier = pickle.load(pickle_in)
 
-@app.route('/')
-def Welcome():
-    return "Welcome To The Home Page"
+def predict_note_authentication(variance, skewness, curtosis, entropy):
+    prediction = classifier.predict([[variance, skewness, curtosis, entropy]])
+    return prediction[0]
 
-@app.route('/predict')
-def predict_note_authentication():
-    variance=request.args.get('variance')
-    skewness=request.args.get('skewness')
-    curtosis=request.args.get('curtosis')
-    entropy=request.args.get('entropy')
-    prediction = classifier.predict([[variance,skewness,curtosis,entropy]])
-    return "The Predicted Class is"+ str(prediction)
+def main():
+    stl.title("Bank Note Authenticator")
+    html_temp = """
+    <div style="background-color:tomato;padding:10px">
+        <h2 style="color:white;text-align:center;"> Streamlit Bank Authenticator ML App </h2>
+    </div>
+    """
+    stl.markdown(html_temp, unsafe_allow_html=True)
 
-if __name__=="__main__":
-    app.run()
+    variance = stl.text_input("Variance", "Type Here")
+    skewness = stl.text_input("Skewness", "Type Here")
+    curtosis = stl.text_input("Curtosis", "Type Here")
+    entropy = stl.text_input("Entropy", "Type Here")
+
+    if stl.button("Predict"):
+        result = predict_note_authentication(float(variance), float(skewness), float(curtosis), float(entropy))
+        stl.success(f"The Predicted Class is {result}")
+
+    if stl.button("About"):
+        stl.text("Let's Learn")
+        stl.text("Built with Streamlit")
+
+if __name__ == "__main__":
+    main()
